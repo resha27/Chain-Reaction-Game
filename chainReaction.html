@@ -1,0 +1,214 @@
+<html>
+
+<head>
+	<link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body onload="gameBoard()">
+
+	<h1> CHAIN REACTION </h1>
+
+	<div id="gameboard">
+
+	</div>
+
+
+
+	<script>
+		var color;
+		//Game Board 
+		function gameBoard() {
+			color = 0;
+			var gameboard = document.getElementById('gameboard');
+
+			for (i = 0; i < 10; i++) {
+
+				for (j = 0; j < 10; j++) {
+					var cell = document.createElement('div');
+
+					cell.id = i + "_" + j;
+					cell.criticalmass = 0;
+					cell.mass = 0;
+					cell.player = -1;
+					if (i != 0) {
+						cell.criticalmass++;
+					}
+					if (j != 0) {
+						cell.criticalmass++;
+					}
+					if (i != 9) {
+						cell.criticalmass++;
+					}
+					if (j != 7) {
+						cell.criticalmass++;
+					}
+					if (j == 0) {
+						cell.classList.add('floatfirst');
+					}
+					cell.classList.add('cell');
+					gameboard.appendChild(cell);
+
+					cell.addEventListener('click', imageDisplay);
+				}
+			}
+
+		}
+
+		//Displaying Objects
+		var imageDisplay = function (event) {
+			// console.log(event.target.criticalmass); //to display steps in console browser
+			if (event.target.mass != undefined) {
+				addImg(event.target, false);
+			} else {
+				addImg(event.target.parentElement, false);
+			}
+		}
+
+		function addImg(target, split) {
+			var c = 0;
+			
+			if (target.mass == 0) {
+				var image;
+				image = document.createElement("IMG");
+				image.setAttribute("src", "Images/Obj-" + color + "-1.gif");
+				target.appendChild(image);
+
+				target.mass++;
+				target.player = color;
+				c++;
+				console.log(target.player + " - " + color);
+			} else {
+				if (target.mass < target.criticalmass - 1 && target.player == color) {
+					target.firstChild.src = "Images/Obj-" + color + "-" + (target.mass + 1) + ".gif";
+					target.mass++;
+					c++;
+
+				} else if (target.mass == target.criticalmass - 1 && target.player == color) {
+					console.log(target.player + " " + color + " + " + (target.mass));
+
+					splitImg(target, true);
+					c++;
+
+				}
+				if(split==true && target.player != color && target.mass == target.criticalmass - 1){
+					splitImg(target, true);
+					c++;
+				}
+
+				if(split==true && target.player != color && target.mass < target.criticalmass - 1){
+					if(target.firstChild!=null)
+					target.firstChild.src = "Images/Obj-" + color + "-" + (target.mass + 1) + ".gif";
+				}
+			}
+			if (split == false && c>0) {
+				c=0;
+				if (color == 0) {
+					color = 1;
+				} else {
+					color = 0;
+				}
+				change_color();
+			}
+		}
+		
+		
+		function change_color(){
+			var i;
+			var gameboard = document.getElementById("gameboard");
+			var array = gameboard.children;
+			
+			for(i=0;i<array.length;i++)
+			{
+				array[i].classList.toggle("redcolor");
+			}
+		}
+
+		
+		function splitImg(target, split) {
+			var temp = target;
+			var id = target.getAttribute("id").toString().split("_");
+			var adjCell = getAdjCel(parseInt(id[0]), parseInt(id[1]));
+
+			target.getAttribute("id").toString().split("_");
+			target.player = -1;
+			target.mass = 0;
+			target.criticalmass = getmass(parseInt(id[0]), parseInt(id[1]));
+			target.innerHTML = "";
+
+			for (var p in adjCell) {
+				if (adjCell[p][1] != null)
+					addImg(adjCell[p][1], true);
+			}
+			if (split == false){
+				
+				playerChange();
+				
+			}
+			var all_atoms = document.getElementsByTagName("IMG");
+				console.log(all_atoms);
+				if (all_atoms.length > 1) {
+					var i = 0;
+					var score = 0;
+					var temp = all_atoms[0].parentElement.player;
+					for (i = 0; i < all_atoms.length; i++) {
+						if (all_atoms[i].parentElement.mass > 0 && all_atoms[i].parentElement.player == temp) {
+							score = score + 1;
+						} else {
+							break;
+						}
+					}
+					console.log(all_atoms.length +" "+ score);
+					if (all_atoms.length == score) {
+						var p = color == 0 ? "green" : "red";
+						alert("Win = "+p);
+						console.log(p);
+					}
+				}
+
+			
+
+		}
+
+		function getmass(i, j) {
+			if ((i == 0 && j == 0) || (i == 9 && j == 0) || (i == 9 && j == 7) || (i == 0 && j == 7)) {
+				return 2;
+			} else if ((i > 0 && j == 0) || (i == 0 && j >= 0) || (i == 9 && j >= 0) || (i > 0 && j == 7 - 1)) {
+				return 3;
+			} else {
+				return 4;
+			}
+		}
+
+		function getAdjCel(i, j) {
+
+			var adjCell = [
+				["top", null],
+				["right", null],
+				["bottom", null],
+				["left", null]
+			];
+
+			if ((i - 1) >= 0) {
+				adjCell[0][1] = document.getElementById((i - 1) + "_" + j);
+			}
+
+			if ((j + 1) < 8) {
+				adjCell[1][1] = document.getElementById(i + "_" + (j + 1));
+			}
+
+			if ((i + 1) < 10) {
+				adjCell[2][1] = document.getElementById((i + 1) + "_" + j);
+			}
+
+			if ((j - 1) >= 0) {
+				adjCell[3][1] = document.getElementById(i + "_" + (j - 1));
+			}
+
+			return adjCell;
+		}
+
+		
+	</script>
+</body>
+
+</html>
